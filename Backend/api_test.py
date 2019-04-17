@@ -5,7 +5,7 @@ app = Flask(__name__)
 image_number = 0
 
 
-@app.route('/pls', methods=['POST', 'GET'])
+@app.route('/post', methods=['POST', 'GET'])
 def index():
     global image_number
     image_number += 1
@@ -23,7 +23,7 @@ def index():
     return send_file(bw_dir, mimetype='image/gif')
 
 
-@app.route('/test', methods=['GET'])
+@app.route('/get', methods=['GET'])
 def java():
     with open('./processed/black_and_white_1.jpeg', 'rb') as f:
         return f.read()
