@@ -1,0 +1,6 @@
+<resources>
+    <string name="app_name">APITests</string>
+    <string name="button_hint">CHOOSE FILE</string>
+    <string name="image_view">Image View</string>
+    <string name="upload_hint">UPLOAD IMAGE</string>
+</resources>
