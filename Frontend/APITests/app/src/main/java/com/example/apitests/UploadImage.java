@@ -4,6 +4,15 @@ import android.graphics.Bitmap;
 import android.os.AsyncTask;
 import android.provider.Settings;
 import android.util.Base64;
+
+import com.android.volley.AuthFailureError;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
+
 import org.apache.http.*;
 
 import java.io.BufferedOutputStream;
@@ -20,6 +29,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class UploadImage extends AsyncTask<Void, Void, Void> {
 
@@ -34,27 +44,28 @@ public class UploadImage extends AsyncTask<Void, Void, Void> {
     protected Void doInBackground(Void... voids) {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         imageBitmap.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream);
-        String encodedImage = Base64.encodeToString(byteArrayOutputStream.toByteArray(), Base64.DEFAULT);
+        final String encodedImage = Base64.encodeToString(byteArrayOutputStream.toByteArray(), Base64.DEFAULT);
 
-        List<Settings.NameValueTable>
+        StringRequest request = new StringRequest(Request.Method.POST, SERVER_ADDRESS, new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
 
-        try {
-            URL url = new URL(SERVER_ADDRESS + "/post");
-            HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
-            OutputStream outputStream = new BufferedOutputStream(httpURLConnection.getOutputStream());
-            BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(outputStream, StandardCharsets.UTF_16));
-            writer.write(encodedImage);
-            writer.flush();
-            writer.close();
-            outputStream.close();
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
 
-            httpURLConnection.connect();
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+            }
+        }) {
+            @Override
+            protected Map<String, String> getParams() throws AuthFailureError {
+                Map<String, String> params = new HashMap<>();
+                params.put("image", encodedImage);
 
+                return params;
+            }
+
+        };
         return null;
     }
 
