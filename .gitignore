@@ -1,2 +1,9 @@
 Backend/.idea
 Backend/TEST
+Backend/processed
+Backend/uploads
+Backend/api_test.py
+Backend/test.txt
+Backend/req.txt
+Backend/test.py
+env/

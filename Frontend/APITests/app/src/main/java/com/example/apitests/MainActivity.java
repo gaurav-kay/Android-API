@@ -1,5 +1,6 @@
 package com.example.apitests;
 
+import android.app.DownloadManager;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
@@ -22,8 +23,12 @@ import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 import java.io.Console;
@@ -34,8 +39,10 @@ import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
+    private static final String TAG = "TAG";
+
     private final static int PICK_IMAGE_REQUEST = 1;
-    private static final String SERVER_ADDRESS = "http://127.0.0.1:8000";
+    private static final String SERVER_ADDRESS = "http://image-processing-flask-api.herokuapp.com";
 
     private Button mButtonChooseImage, mButtonUploadImage;
     private ImageView mImageView;
@@ -67,30 +74,53 @@ public class MainActivity extends AppCompatActivity {
                 ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
                 bitmap.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream);
                 final String encodedImage = Base64.encodeToString(byteArrayOutputStream.toByteArray(), Base64.DEFAULT);
+//
+//                StringRequest request = new StringRequest(Request.Method.POST, SERVER_ADDRESS, new Response.Listener<String>() {
+//                    @Override
+//                    public void onResponse(String response) {
+//                        Toast.makeText(MainActivity.this, "Uploaded", Toast.LENGTH_SHORT).show();
+//                    }
+//                }, new Response.ErrorListener() {
+//                    @Override
+//                    public void onErrorResponse(VolleyError error) {
+//                        Toast.makeText(MainActivity.this, "o no", Toast.LENGTH_SHORT).show();
+//                    }
+//                }) {
+//                    @Override
+//                    protected Map<String, String> getParams() throws AuthFailureError {
+//                        Map<String, String> params = new HashMap<>();
+//                        params.put("image", encodedImage);
+//
+//                        return params;
+//                    }
+//
+//                };
+//
+//                RequestQueue requestQueue = Volley.newRequestQueue(MainActivity.this);
+//                requestQueue.add(request);
 
-                StringRequest request = new StringRequest(Request.Method.POST, SERVER_ADDRESS, new Response.Listener<String>() {
-                    @Override
-                    public void onResponse(String response) {
-                        Toast.makeText(MainActivity.this, "Uploaded", Toast.LENGTH_SHORT).show();
-                    }
-                }, new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        Toast.makeText(MainActivity.this, "o no", Toast.LENGTH_SHORT).show();
-                    }
-                }) {
-                    @Override
-                    protected Map<String, String> getParams() throws AuthFailureError {
-                        Map<String, String> params = new HashMap<>();
-                        params.put("image", encodedImage);
+                Log.d(TAG, "onClick: " + encodedImage.length());
+                Log.d(TAG, "onClick: " + "encded image: " + encodedImage);
 
-                        return params;
-                    }
+                JsonObjectRequest jsonObjectRequest = null;
+                Map<String, String> map = new HashMap<>();
+                map.put("image", encodedImage);
+                jsonObjectRequest = new JsonObjectRequest
+                        (Request.Method.GET, SERVER_ADDRESS, new JSONObject(map), new Response.Listener<JSONObject>() {
 
-                };
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                Log.d(TAG, "onResponse: " + response.toString());
+                            }
+                        }, new Response.ErrorListener() {
 
-                RequestQueue requestQueue = Volley.newRequestQueue(MainActivity.this);
-                requestQueue.add(request);
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                Log.d(TAG, "onErrorResponse: " + error.toString());
+                            }
+                        });
+
+                UploadImage.getInstance(MainActivity.this).addToRequestQueue(jsonObjectRequest);
             }
         });
     }
