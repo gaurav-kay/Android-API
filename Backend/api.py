@@ -6,24 +6,22 @@ app = Flask(__name__)
 @app.route('/')
 def post_request():
     try:
-        with open('op.txt', 'a') as f:
-            f.write(request)
-            f.write('\n')
-        print("hey, request is: ", request)
+        print("Request is", request)
     except Exception:
-        pass
+        print("request print fail")
     try:
-        print(request.files['image'])
+        print("request.files['images']", request.files['image'])
     except Exception:
         print("no file")
     try:
-        print(request.json['image'])
+        print("request.json['image']", request.json['image'])
     except Exception:
-        pass
+        print("request.json['image']", "no json image")
     try:
-        print(request['image'])
+        print("request['image']", request['image'])
     except Exception:
-        pass
+        print("request['image']", "fail no 'image'")
+
     return jsonify({'message': "Hey i gotchu"})
 
 
