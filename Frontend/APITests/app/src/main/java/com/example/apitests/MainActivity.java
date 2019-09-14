@@ -15,21 +15,12 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
-//import com.android.volley.AuthFailureError;
-//import com.android.volley.Request;
-//import com.android.volley.RequestQueue;
-//import com.android.volley.Response;
-//import com.android.volley.VolleyError;
-//import com.android.volley.toolbox.JsonObjectRequest;
-//import com.android.volley.toolbox.StringRequest;
-//import com.android.volley.toolbox.Volley;
 
 import org.jetbrains.annotations.NotNull;
 
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -40,12 +31,9 @@ public class MainActivity extends AppCompatActivity {
     private static final int REQUEST_CODE = 10;
 
     private Button mButtonChooseImage, mButtonUploadImage;
-    private ImageView mImageView;
+    protected ImageView mImageView;
     private Uri mImageUri;
-
-    public static final MediaType MEDIA_TYPE_MARKDOWN = MediaType.parse("image/jpeg");
-
-    private OkHttpClient client = new OkHttpClient();
+    protected ProgressBar progressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,6 +46,8 @@ public class MainActivity extends AppCompatActivity {
         // Preview image and send it to server
         mButtonChooseImage = findViewById(R.id.button_choose_image);
         mButtonUploadImage = findViewById(R.id.button_upload_image);
+        progressBar = findViewById(R.id.progressBar);
+        progressBar.setVisibility(View.INVISIBLE);
 
         mButtonUploadImage.setVisibility(View.GONE);
         doRequestPermissions();
@@ -73,68 +63,11 @@ public class MainActivity extends AppCompatActivity {
         mButtonUploadImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-//
-//                StringRequest request = new StringRequest(Request.Method.POST, SERVER_ADDRESS, new Response.Listener<String>() {
-//                    @Override
-//                    public void onResponse(String response) {
-//                        Toast.makeText(MainActivity.this, "Uploaded", Toast.LENGTH_SHORT).show();
-//                    }
-//                }, new Response.ErrorListener() {
-//                    @Override
-//                    public void onErrorResponse(VolleyError error) {
-//                        Toast.makeText(MainActivity.this, "o no", Toast.LENGTH_SHORT).show();
-//                    }
-//                }) {
-//                    @Override
-//                    protected Map<String, String> getParams() throws AuthFailureError {
-//                        Map<String, String> params = new HashMap<>();
-//                        params.put("image", encodedImage);
-//
-//                        return params;
-//                    }
-//
-//                };
-//
-//                RequestQueue requestQueue = Volley.newRequestQueue(MainActivity.this);
-//                requestQueue.add(request);
-///////////////////////////////////////////////////////////
-//                Bitmap bitmap = ((BitmapDrawable) mImageView.getDrawable()).getBitmap();
-//                ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-//                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream);
-//                final String encodedImage = Base64.encodeToString(byteArrayOutputStream.toByteArray(), Base64.DEFAULT);
-//
-//                Log.d(TAG, "onClick: " + encodedImage.length());
-//                Log.d(TAG, "onClick: " + "encded image: " + encodedImage);
-//
-//                JsonObjectRequest jsonObjectRequest = null;
-//                Map<String, String> map = new HashMap<>();
-//                map.put("image", encodedImage);
-//                jsonObjectRequest = new JsonObjectRequest
-//                        (Request.Method.GET, SERVER_ADDRESS, new JSONObject(map), new Response.Listener<JSONObject>() {
-//
-//                            @Override
-//                            public void onResponse(JSONObject response) {
-//                                Log.d(TAG, "onResponse: " + response.toString());
-//                            }
-//                        }, new Response.ErrorListener() {
-//
-//                            @Override
-//                            public void onErrorResponse(VolleyError error) {
-//                                Log.d(TAG, "onErrorResponse: " + error.toString());
-//                            }
-//                        });
-//
-//                UploadImage.getInstance(MainActivity.this).addToRequestQueue(jsonObjectRequest);
-                ///////////////////////////////////////////
-//                HttpClient httpclient = new DefaultHttpClient();
-//                HttpPost httppost = new HttpPost("LINK TO SERVER");
-                //////////////////////////////////////////////
+
                 Bitmap bitmap = ((BitmapDrawable) mImageView.getDrawable()).getBitmap();
 
-                UploadImage uploadImageTask = new UploadImage(mImageUri, bitmap);
+                UploadImage uploadImageTask = new UploadImage(mImageUri, bitmap, MainActivity.this);
                 uploadImageTask.execute();
-
-                Log.d(TAG, "onClick: done ? ");
             }
         });
     }
@@ -210,5 +143,9 @@ public class MainActivity extends AppCompatActivity {
                 mButtonUploadImage.setVisibility(View.GONE);
             }
         }
+    }
+
+    public void displayToast() {
+        Toast.makeText(this, "Received ", Toast.LENGTH_LONG).show();
     }
 }

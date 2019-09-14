@@ -142,10 +142,13 @@
 package com.example.apitests;
 
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Environment;
 import android.util.Log;
+import android.view.View;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import org.jetbrains.annotations.NotNull;
@@ -154,6 +157,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.lang.ref.WeakReference;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -164,51 +169,58 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import okhttp3.ResponseBody;
 
 public class UploadImage extends AsyncTask<Void, Void, Void> {
 
     private static final String TAG = "TAG";
 
     private Uri mImageUri;
-    private File mFile;
     private OkHttpClient client;
     private Bitmap bitmap;
+
+    private WeakReference<MainActivity> mainActivityWeakReference;
 
     private static final MediaType MEDIA_TYPE_MARKDOWN = MediaType.parse("image/jpeg");
     private static final String SERVER_ADDRESS = "http://image-processing-flask-api.herokuapp.com";
 
-    UploadImage(Uri imageUri, Bitmap bitmap) {
+    UploadImage(Uri imageUri, Bitmap bitmap, MainActivity mainActivity) {
         this.mImageUri = imageUri;
         Dispatcher dispatcher = new Dispatcher();
         dispatcher.setMaxRequests(1);
         this.client = new OkHttpClient.Builder()
                             .dispatcher(dispatcher)
                             .build();
-        this.mFile = null;
+
+        mainActivityWeakReference = new WeakReference<>(mainActivity);
+
         this.bitmap = bitmap;
     }
 
     @Override
-    protected Void doInBackground(Void... voids) {
-        File filePath = Environment.getExternalStorageDirectory();
-        File directory = new File(filePath.getAbsolutePath());
-        directory.mkdir();
-        File file = new File(directory, "tempFile.jpeg");
+    protected void onPreExecute() {
+        super.onPreExecute();
 
-        Log.d(TAG, "doInBackground: HELLO");
-        Log.d(TAG, "doInBackground: " + file);
+        MainActivity mainActivity;
+        mainActivity = mainActivityWeakReference.get();
+
+        mainActivity.progressBar.setVisibility(View.VISIBLE);
+    }
+
+    @Override
+    protected Void doInBackground(Void... voids) {
+        final File filePath = Environment.getExternalStorageDirectory();
+        final File directory = new File(filePath.getAbsolutePath());
+        directory.mkdir();
+        final File mFile = new File(directory, "tempFile.jpeg");
+
+        Log.d(TAG, "doInBackground: " + mFile);
         
         try {
-            Log.d(TAG, "doInBackground: OKAY");
-            
-            FileOutputStream fileOutputStream = new FileOutputStream(file);
+            FileOutputStream fileOutputStream = new FileOutputStream(mFile);
             this.bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fileOutputStream);
-
             fileOutputStream.flush();
             fileOutputStream.close();
-
-            this.mFile = file;
-            Log.d(TAG, "doInBackground: " + this.mFile);
 
             Log.d(TAG, "doInBackground: written");
         } catch (IOException e) {
@@ -216,31 +228,15 @@ public class UploadImage extends AsyncTask<Void, Void, Void> {
             e.printStackTrace();
         }
 
-//        Request request = new Request.Builder()
-//                .url(SERVER_ADDRESS)
-//                .post(RequestBody.create(file, MEDIA_TYPE_MARKDOWN))
-//                .build();
-//
-//        try (Response response = client.newCall(request).execute()) {
-//            if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
-//
-//            Log.d(TAG, "run: " + response);
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//        return null;
-
         RequestBody body = new MultipartBody.Builder()
                 .setType(MultipartBody.FORM)
-                .addFormDataPart("image", this.mFile.getName(), RequestBody.create(MEDIA_TYPE_MARKDOWN, this.mFile))
+                .addFormDataPart("image", mFile.getName(), RequestBody.create(MEDIA_TYPE_MARKDOWN, mFile))
                 .build();
 
-        Log.d(TAG, "doInBackground: Body built");
-
-        Request request = new Request.Builder()
+        final Request request = new Request.Builder()
                 .addHeader("Connection", "keep-alive")
                 .url(SERVER_ADDRESS)
-                .get()
+                .post(body)
                 .build();
 
         Log.d(TAG, "doInBackground: SENT REQUEST");
@@ -250,26 +246,52 @@ public class UploadImage extends AsyncTask<Void, Void, Void> {
                 @Override
                 public void onFailure(@NotNull Call call, @NotNull IOException e) {
                     Log.d(TAG, "onFailure: ON FAILURE");
+                    e.printStackTrace();
                 }
 
                 @Override
-                public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                public void onResponse(@NotNull Call call, @NotNull final Response response) {
                     if (!response.isSuccessful()) {
-                        Log.d(TAG, "onResponse: THIS AINT SUCCESSFUL" + response.toString());
+                        Log.d(TAG, "onResponse: THIS AIN'T SUCCESSFUL" + response.toString());
                         return;
                     }
                     Log.d(TAG, "onResponse: response is " + response);
+
+                    boolean garbage;
+                    garbage = mFile.delete();
+                    garbage = filePath.delete();
+                    garbage = directory.delete();
+
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            parseResponse(response.body());
+                        }
+                    }).start();
                 }
             });
-            boolean garbage;
-            garbage = this.mFile.delete();
-            garbage = file.delete();
-            garbage = filePath.delete();
-            garbage = directory.delete();
         } catch (Exception e) {
             e.printStackTrace();
         }
 
         return null;
+    }
+
+    private void parseResponse(ResponseBody body) {
+        InputStream inputStream = body.byteStream();
+        Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
+
+        final MainActivity mainActivity;
+        mainActivity = mainActivityWeakReference.get();
+
+        mainActivity.mImageView.setImageBitmap(bitmap);
+        mainActivity.progressBar.setVisibility(View.INVISIBLE);
+
+        mainActivity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mainActivity.displayToast();
+            }
+        });
     }
 }

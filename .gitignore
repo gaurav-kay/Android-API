@@ -5,3 +5,4 @@ Backend/test.py
 env
 */*.jpeg
 .gitignore
+Frontend/APITests/app/src/main/java/com/example/apitests/Tests.java
