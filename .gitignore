@@ -3,4 +3,5 @@ Backend/.idea
 Backend/api_test.py
 Backend/test.py
 env
+*/*.jpeg
 .gitignore

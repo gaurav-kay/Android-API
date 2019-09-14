@@ -1,28 +1,29 @@
-from flask import Flask, request, jsonify
+import cv2
+import os
+from flask import Flask, request
 
 app = Flask(__name__)
+path = './temp.jpeg'
 
 
 @app.route('/', methods=['GET', 'POST'])
 def post_request():
-    try:
-        print("Request is", request)
-    except Exception:
-        print("request print fail")
-    try:
-        print("request.files['images']", request.files['image'])
-    except Exception:
-        print("no file")
-    try:
-        print("request.json['image']", request.json['image'])
-    except Exception:
-        print("request.json['image']", "no json image")
-    try:
-        print("request['image']", request['image'])
-    except Exception:
-        print("request['image']", "fail no 'image'")
+    file = request.files['image']
+    file.save(path)
 
-    return jsonify({'message': "Hey i gotchu"})
+    def generate_and_remove():
+        with open(path, 'rb') as f:
+            yield from f
+
+        os.remove(path)
+
+    black_and_white = cv2.imread(path, cv2.IMREAD_GRAYSCALE)
+    cv2.imwrite(path, black_and_white)
+
+    response = app.response_class(generate_and_remove(), mimetype='image/gif')
+    response.headers.set('Content-Disposition', 'attachment', filename='filename')
+
+    return response
 
 
 if __name__ == '__main__':

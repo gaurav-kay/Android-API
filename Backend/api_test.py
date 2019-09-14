@@ -30,3 +30,14 @@ def java():
 
 if __name__ == '__main__':
     app.run(debug=True, port=8000)
+
+# file_str = file.read()
+# np_image = np.fromstring(file_str, np.uint8)
+#
+# black_and_white = cv2.imdecode(np_image, cv2.IMREAD_GRAYSCALE)
+#
+# img = Image.fromarray(black_and_white)
+# print(type(img))
+# print(img)
+#
+# return send_file()
