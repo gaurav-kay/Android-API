@@ -261,30 +261,14 @@ public class UploadImage extends AsyncTask<Void, Void, Void> {
                     Log.d(TAG, "onResponse: response is " + response);
                 }
             });
+            boolean garbage;
+            garbage = this.mFile.delete();
+            garbage = file.delete();
+            garbage = filePath.delete();
+            garbage = directory.delete();
         } catch (Exception e) {
             e.printStackTrace();
         }
-//        try (Response response = client.newCall(request).execute()) {
-//            if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
-//
-//            Log.d(TAG, "doInBackground: i be done");
-//            System.out.println(response.body().string());
-//
-//            boolean garbage;
-//            garbage = this.mFile.delete();
-//            garbage = file.delete();
-//            garbage = filePath.delete();
-//            garbage = directory.delete();
-//
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//
-//            boolean garbage;
-//            garbage = this.mFile.delete();
-//            garbage = file.delete();
-//            garbage = filePath.delete();
-//            garbage = directory.delete();
-//        }
 
         return null;
     }

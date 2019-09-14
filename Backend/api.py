@@ -1,4 +1,4 @@
-import cv2
+from PIL import Image
 import os
 from flask import Flask, request
 
@@ -17,8 +17,9 @@ def post_request():
 
         os.remove(path)
 
-    black_and_white = cv2.imread(path, cv2.IMREAD_GRAYSCALE)
-    cv2.imwrite(path, black_and_white)
+    image = Image.open(path)
+    black_and_white = image.convert('L')
+    black_and_white.save(path)
 
     response = app.response_class(generate_and_remove(), mimetype='image/gif')
     response.headers.set('Content-Disposition', 'attachment', filename='filename')

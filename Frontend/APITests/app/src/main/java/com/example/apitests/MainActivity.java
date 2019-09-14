@@ -26,6 +26,8 @@ import android.widget.Toast;
 //import com.android.volley.toolbox.StringRequest;
 //import com.android.volley.toolbox.Volley;
 
+import org.jetbrains.annotations.NotNull;
+
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 
@@ -167,21 +169,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-//    public void run() throws Exception {
-//        File file = new File(mImageUri.getPath());
-//
-//        Request request = new Request.Builder()
-//                .url(SERVER_ADDRESS)
-//                .post(RequestBody.create(file, MEDIA_TYPE_MARKDOWN))
-//                .build();
-//
-//        try (Response response = client.newCall(request).execute()) {
-//            if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
-//
-//            Log.d(TAG, "run: " + response);
-//        }
-//    }
-
     // Select image driver
     private void selectImage() {
         Intent intent = new Intent();
@@ -210,22 +197,17 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode,
-                                           String[] permissions, int[] grantResults) {
-        switch (requestCode) {
-            case REQUEST_CODE: {
-                // If request is cancelled, the result arrays are empty.
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    // permission was granted, yay!
+    public void onRequestPermissionsResult(int requestCode, @NotNull String[] permissions, @NotNull int[] grantResults) {
+        if (requestCode == REQUEST_CODE) {// If request is cancelled, the result arrays are empty.
+            if (grantResults.length > 0
+                    && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // permission was granted, yay!
 
-                    mButtonUploadImage.setVisibility(View.VISIBLE);
-                } else {
-                    // permission denied, boo! Disable the
-                    // functionality that depends on this permission.
-                    mButtonUploadImage.setVisibility(View.GONE);
-                }
-                return;
+                mButtonUploadImage.setVisibility(View.VISIBLE);
+            } else {
+                // permission denied, boo! Disable the
+                // functionality that depends on this permission.
+                mButtonUploadImage.setVisibility(View.GONE);
             }
         }
     }
